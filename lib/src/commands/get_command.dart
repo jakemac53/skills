@@ -40,7 +40,8 @@ class GetCommand extends SkillsCommand {
       );
     }
 
-    final ides = resolveIdes(argResults: argResults, projectPath: rootPath);
+    final ides =
+        await resolveIdes(argResults: argResults, projectPath: rootPath);
 
     final ready = await PubRunner.ensureWorkspaceConfigs(workspace);
     if (!ready) {

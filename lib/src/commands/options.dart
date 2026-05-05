@@ -1,7 +1,9 @@
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, stdout;
 
 import 'package:args/args.dart';
+import 'package:cli_util/cli_components.dart';
 import 'package:config/config.dart';
+import 'package:skills/src/core/stdin.dart';
 
 import '../ide/ide.dart';
 
@@ -41,10 +43,10 @@ void addIdeOption(ArgParser argParser) {
 /// If `--ide` is specified (or the `SKILLS_IDE` env var), returns that single
 /// IDE. Otherwise returns all auto-detected IDEs.
 /// Throws if no IDE can be determined.
-List<Ide> resolveIdes({
+Future<List<Ide>> resolveIdes({
   required ArgResults? argResults,
   required String projectPath,
-}) {
+}) async {
   final config = Configuration.resolveNoExcept(
     options: SkillsOption.values,
     argResults: argResults,
@@ -62,11 +64,18 @@ List<Ide> resolveIdes({
   }
 
   final detected = const IdeDetector().detectAll(projectPath);
-  if (detected.isEmpty) {
-    throw UsageException(
-      'Could not auto-detect IDE. Use --ide to specify one of: ${Ide.validNames}',
-      '',
-    );
+  if (detected.isNotEmpty) return detected;
+
+  if (stdout.hasTerminal) {
+    print('Unable to auto-detect IDE. Please select one or more:');
+    final options = Ide.values.map((e) => e.cliName).toList();
+    final result = await showMultiSelectDialog(options, sharedStdIn);
+    if (result != null && result.isNotEmpty) {
+      return result.map((e) => Ide.values[e]).toList();
+    }
   }
-  return detected;
+  throw UsageException(
+      'Could not auto-detect IDE and none selected. Use --ide to specify one of: '
+          '${Ide.validNames}',
+      '');
 }
