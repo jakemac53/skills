@@ -8,8 +8,7 @@ import 'package:skills/src/models/skill_manifest.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
-const _enter = [10];
-const _downArrow = [27, 91, 66];
+import '../utils/test_utils.dart';
 
 void main() {
   group('Given a GenericAdapter', () {
@@ -131,13 +130,13 @@ Steps to analyze.
 
     test('migrates .agent to .agents', () async {
       await IOOverrides.runZoned(() async {
-        await withSharedStdin(SharedStdIn(Stream.fromIterable([_enter])),
+        await withSharedStdin(SharedStdIn(Stream.fromIterable([enterKey])),
             () async {
           final migrated = await adapter.migrateSkillsDir(manifest);
           expect(migrated, isTrue);
           await adapter.ensureSkillsDirectory();
         });
-      }, stdout: () => _DummyStdout());
+      }, stdout: () => DummyStdout());
 
       expect(
         await Directory(d.path('project_migration/.agents/skills/old-skill'))
@@ -159,13 +158,13 @@ Steps to analyze.
           .writeAsString('content');
 
       await IOOverrides.runZoned(() async {
-        await withSharedStdin(SharedStdIn(Stream.fromIterable([_enter])),
+        await withSharedStdin(SharedStdIn(Stream.fromIterable([enterKey])),
             () async {
           final migrated = await adapter.migrateSkillsDir(manifest);
           expect(migrated, isTrue);
           await adapter.ensureSkillsDirectory();
         });
-      }, stdout: () => _DummyStdout());
+      }, stdout: () => DummyStdout());
 
       expect(
         await Directory(d.path('project_migration/.agents/skills/old-skill'))
@@ -187,11 +186,12 @@ Steps to analyze.
       await IOOverrides.runZoned(() async {
         await withSharedStdin(
             SharedStdIn(Stream.fromIterable(
-                [_downArrow, _downArrow, _downArrow, _enter])), () async {
+                [downArrowKey, downArrowKey, downArrowKey, enterKey])),
+            () async {
           final migrated = await adapter.migrateSkillsDir(manifest);
           expect(migrated, isFalse);
         });
-      }, stdout: () => _DummyStdout());
+      }, stdout: () => DummyStdout());
 
       expect(
         await Directory(d.path('project_migration/.agent/skills/old-skill'))
@@ -205,19 +205,4 @@ Steps to analyze.
       );
     });
   });
-}
-
-/// Just swallows stdout so that it doesn't pollute the output.
-class _DummyStdout implements Stdout {
-  @override
-  void writeln([Object? object = '']) {}
-
-  @override
-  void write(Object? object) {}
-
-  @override
-  bool get hasTerminal => true;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => null;
 }

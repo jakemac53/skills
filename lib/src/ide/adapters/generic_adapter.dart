@@ -55,7 +55,8 @@ class GenericAdapter extends AgentSkillsAdapter {
         return true;
       }
 
-      stdout.writeln('Found an old `.agent/skills` directory with managed skills. '
+      stdout.writeln(
+          'Found an old `.agent/skills` directory with managed skills. '
           'What would you like to do?');
       final result = await showSingleSelectDialog([
         'Move ONLY managed skills to .agents/skills',

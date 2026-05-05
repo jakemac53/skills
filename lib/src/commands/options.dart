@@ -1,4 +1,4 @@
-import 'dart:io' show Platform, stdout;
+import 'dart:io' show Platform, stdin, stdout;
 
 import 'package:args/args.dart';
 import 'package:cli_util/cli_components.dart';
@@ -66,7 +66,7 @@ Future<List<Ide>> resolveIdes({
   final detected = const IdeDetector().detectAll(projectPath);
   if (detected.isNotEmpty) return detected;
 
-  if (stdout.hasTerminal) {
+  if (stdout.hasTerminal && stdin.hasTerminal) {
     print('Unable to auto-detect IDE. Please select one or more:');
     final options = Ide.values.map((e) => e.cliName).toList();
     final result = await showMultiSelectDialog(options, sharedStdIn);
