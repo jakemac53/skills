@@ -21,7 +21,7 @@ void main() {
     test(
       'when scanning flat layout then returns ScannedSkills with correct fields',
       () async {
-        const registryRepo = RegistryRepo(
+        const registryRepo = GitRepo(
           cloneUrl: 'https://github.com/owner/repo.git',
         );
         await d.dir('project', [
@@ -67,7 +67,7 @@ void main() {
     test(
       'when scanning groupedByPackage layout then returns ScannedSkills',
       () async {
-        const registryRepo = RegistryRepo(
+        const registryRepo = GitRepo(
           cloneUrl: 'https://github.com/owner/repo.git',
         );
         await d.dir('project', [
@@ -149,7 +149,7 @@ void main() {
         d.path('project'),
         isGlobal: false,
         repos: [
-          const RegistryRepo(
+          const GitRepo(
             cloneUrl: 'https://github.com/a/b.git',
           ),
         ],
@@ -179,7 +179,7 @@ void main() {
         d.path('project'),
         isGlobal: false,
         repos: [
-          const RegistryRepo(
+          const GitRepo(
             cloneUrl: 'https://github.com/a/b.git',
           ),
         ],
@@ -189,10 +189,10 @@ void main() {
 
     test('when multiple repos then aggregates skills from all', () async {
       const registryRepos = [
-        RegistryRepo(
+        GitRepo(
           cloneUrl: 'https://github.com/owner1/repo1.git',
         ),
-        RegistryRepo(
+        GitRepo(
           cloneUrl: 'https://github.com/owner2/repo2.git',
         ),
       ];

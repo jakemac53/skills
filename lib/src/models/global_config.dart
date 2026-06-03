@@ -22,7 +22,7 @@ class GlobalConfig {
     return p.join(configDir, baseName);
   }
 
-  final List<RegistryRepo> registries;
+  final List<GitRepo> registries;
 
   const GlobalConfig({
     this.registries = const [],
@@ -31,7 +31,7 @@ class GlobalConfig {
   factory GlobalConfig.fromJson(Map<String, dynamic> json) {
     final registriesJson = json['registries'] as List<dynamic>? ?? [];
     final registries = registriesJson
-        .map((r) => RegistryRepo.fromJson(r as Map<String, dynamic>))
+        .map((r) => GitRepo.fromJson(r as Map<String, dynamic>))
         .toList();
 
     return GlobalConfig(registries: registries);
@@ -66,14 +66,14 @@ class GlobalConfig {
   }
 
   /// Returns a copy with [repo] added.
-  GlobalConfig withRegistry(RegistryRepo repo) {
+  GlobalConfig withRegistry(GitRepo repo) {
     return GlobalConfig(
       registries: [...registries, repo],
     );
   }
 
   /// Returns a copy with [repo] removed.
-  GlobalConfig withoutRegistry(RegistryRepo repo) {
+  GlobalConfig withoutRegistry(GitRepo repo) {
     return GlobalConfig(
       registries: registries.where((r) => r.cloneUrl != repo.cloneUrl).toList(),
     );

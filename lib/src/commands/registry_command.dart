@@ -101,9 +101,13 @@ class RegistryAddCommand extends SkillsCommand {
           'Must specify whether to install globally or locally.', usage);
     }
 
-    final repos = <RegistryRepo>[];
+    final repos = <GitRepo>[];
     for (final arg in rest) {
-      repos.add(parseRegistryArg(arg, usage));
+      try {
+        repos.add(GitRepo.parse(arg));
+      } on FormatException catch (e) {
+        throw UsageException(e.message, usage);
+      }
     }
 
     if (isGlobal) {
@@ -174,9 +178,8 @@ class RegistryRemoveCommand extends SkillsCommand {
   }
 
   /// Interactive dialog to select registries to remove
-  Future<({List<RegistryRepo> global, List<RegistryRepo> local})>
-      _interactiveRemove(
-          GlobalConfig globalConfig, SkillManifest manifest) async {
+  Future<({List<GitRepo> global, List<GitRepo> local})> _interactiveRemove(
+      GlobalConfig globalConfig, SkillManifest manifest) async {
     final dialogSupport = this.dialogSupport;
     if (dialogSupport == null) {
       throw UsageException(
@@ -184,11 +187,11 @@ class RegistryRemoveCommand extends SkillsCommand {
           usage);
     }
 
-    final fromGlobal = <RegistryRepo>[];
-    final fromLocal = <RegistryRepo>[];
+    final fromGlobal = <GitRepo>[];
+    final fromLocal = <GitRepo>[];
 
     final options = <String>[];
-    final repoMapping = <int, RegistryRepo>{};
+    final repoMapping = <int, GitRepo>{};
     final locationMapping = <int, String>{};
 
     int index = 0;
@@ -231,17 +234,21 @@ class RegistryRemoveCommand extends SkillsCommand {
     return (global: fromGlobal, local: fromLocal);
   }
 
-  Future<({List<RegistryRepo> global, List<RegistryRepo> local})> _removeByArgs(
+  Future<({List<GitRepo> global, List<GitRepo> local})> _removeByArgs(
       List<String> rest,
       bool? forceGlobal,
       GlobalConfig globalConfig,
       SkillManifest manifest) async {
-    final fromGlobal = <RegistryRepo>[];
-    final fromLocal = <RegistryRepo>[];
+    final fromGlobal = <GitRepo>[];
+    final fromLocal = <GitRepo>[];
 
-    final repos = <RegistryRepo>[];
+    final repos = <GitRepo>[];
     for (final arg in rest) {
-      repos.add(parseRegistryArg(arg, usage));
+      try {
+        repos.add(GitRepo.parse(arg));
+      } on FormatException catch (e) {
+        throw UsageException(e.message, usage);
+      }
     }
 
     for (final repo in repos) {
@@ -302,15 +309,15 @@ class RegistryRemoveCommand extends SkillsCommand {
 
   /// Actually performs the removal of registries from configuration and disk.
   Future<void> _performRemoval(
-      List<RegistryRepo> fromGlobal,
-      List<RegistryRepo> fromLocal,
+      List<GitRepo> fromGlobal,
+      List<GitRepo> fromLocal,
       GlobalConfig globalConfig,
       SkillManifest manifest,
       File globalConfigFile,
       String rootPath) async {
     var updatedGlobalConfig = globalConfig;
     var updatedManifest = manifest;
-    final removedRepos = <RegistryRepo>{};
+    final removedRepos = <GitRepo>{};
 
     for (final repo in fromGlobal) {
       updatedGlobalConfig = updatedGlobalConfig.withoutRegistry(repo);
@@ -342,21 +349,5 @@ class RegistryRemoveCommand extends SkillsCommand {
 
     await updatedGlobalConfig.save(globalConfigFile);
     await updatedManifest.save(manifestFile(rootPath));
-  }
-}
-
-/// Parses a registry argument into a [RegistryRepo].
-RegistryRepo parseRegistryArg(String arg, String usage) {
-  if (arg.contains('/') && !arg.contains(':') && !arg.contains('@')) {
-    final parts = arg.split('/');
-    if (parts.length != 2) {
-      throw UsageException(
-          'Invalid registry format: $arg. Expected <owner>/<repo> or a Git URI.',
-          usage);
-    }
-    final url = 'https://github.com/${parts[0]}/${parts[1]}.git';
-    return RegistryRepo(cloneUrl: url);
-  } else {
-    return RegistryRepo(cloneUrl: arg);
   }
 }

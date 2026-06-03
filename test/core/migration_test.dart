@@ -152,7 +152,7 @@ void main() {
 
       var globalConfig = const GlobalConfig();
       globalConfig = globalConfig.withRegistry(
-          const RegistryRepo(cloneUrl: 'https://github.com/owner1/repo1.git'));
+          const GitRepo(cloneUrl: 'https://github.com/owner1/repo1.git'));
       await globalConfig.save(File(globalConfigPath));
 
       fakeDialogSupport.singleSelectResult = null; // Should not prompt

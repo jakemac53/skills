@@ -24,7 +24,7 @@ class RegistryScanner {
   Future<List<ScannedSkill>> scan(
     String rootPath, {
     required bool isGlobal,
-    List<RegistryRepo> repos = const [],
+    List<GitRepo> repos = const [],
   }) async {
     final skills = <ScannedSkill>[];
     final reposPath = registryReposPath(rootPath);

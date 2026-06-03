@@ -142,8 +142,7 @@ environment:
       addTearDown(() => GlobalConfig.globalPathOverride = null);
 
       var globalConfig = const GlobalConfig();
-      globalConfig =
-          globalConfig.withRegistry(RegistryRepo(cloneUrl: registryPath));
+      globalConfig = globalConfig.withRegistry(GitRepo(cloneUrl: registryPath));
       await globalConfig.save(File(globalConfigPath));
 
       final getCommand = GetCommand(
@@ -164,7 +163,461 @@ environment:
       expect(repo.installs, isNotEmpty);
       expect(repo.installs.first, contains('pkg-skill'));
     });
+
+    test(
+        'when installing with --git option then adds registry to manifest and '
+        'installs skills', () async {
+      final mockRegistry = d.dir('mock_registry', [
+        d.dir('skills', [
+          d.dir('pkg-skill', [
+            d.file('SKILL.md', '---\nname: pkg-skill\n---\n'),
+          ]),
+        ]),
+      ]);
+      await mockRegistry.create();
+      final registryPath = mockRegistry.io.path;
+
+      // Initialize git repo
+      await Process.run('git', ['init'], workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.name', 'Test'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.email', 'test@example.com'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['add', '.'], workingDirectory: registryPath);
+      await Process.run('git', ['commit', '-m', 'initial'],
+          workingDirectory: registryPath);
+
+      final project = d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_app
+environment:
+  sdk: ^3.0.0
+'''),
+        d.dir('.dart_tool', [
+          d.file(
+            'package_config.json',
+            jsonEncode({
+              'configVersion': 2,
+              'packages': [
+                {'name': 'test_app', 'rootUri': '../', 'packageUri': 'lib/'},
+              ],
+            }),
+          ),
+        ]),
+        d.dir('.cursor', [d.dir('skills')]),
+      ]);
+      await project.create();
+      final projectPath = project.io.path;
+
+      final getCommand = GetCommand(
+        dialogSupport: FakeDialogSupport()..multiSelectResult = {0},
+      );
+
+      final runner = SkillsCommandRunner('skills', 'Test')
+        ..addCommand(getCommand);
+
+      // Use file:// URI for local path to avoid shorthand parser
+      final registryUri = Uri.file(registryPath).toString();
+
+      await runner.run([
+        '--directory',
+        projectPath,
+        'get',
+        '--ide',
+        'cursor',
+        '--git',
+        registryUri,
+      ]);
+
+      await d.dir(projectPath, [d.dir('.cursor/skills/pkg-skill')]).validate();
+
+      final manifestFile = File(SkillManifest.pathIn(projectPath));
+      expect(await manifestFile.exists(), isTrue);
+      final manifest = await SkillManifest.load(manifestFile);
+      expect(manifest, isNotNull);
+      expect(
+        manifest!.registries.any((r) => r.cloneUrl == registryUri),
+        isTrue,
+      );
+    });
+
+    test(
+        'when repo is already a registry and user confirms conversion, then '
+        'converts to direct repo and installs skills', () async {
+      final mockRegistry = d.dir('mock_registry', [
+        d.dir('skills', [
+          d.dir('pkg-skill', [
+            d.file('SKILL.md', '---\nname: pkg-skill\n---\n'),
+          ]),
+        ]),
+      ]);
+      await mockRegistry.create();
+      final registryPath = mockRegistry.io.path;
+
+      // Initialize git repo
+      await Process.run('git', ['init'], workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.name', 'Test'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.email', 'test@example.com'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['add', '.'], workingDirectory: registryPath);
+      await Process.run('git', ['commit', '-m', 'initial'],
+          workingDirectory: registryPath);
+
+      final registryUri = Uri.file(registryPath).toString();
+
+      final project = d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_app
+environment:
+  sdk: ^3.0.0
+'''),
+        d.dir('.dart_tool', [
+          d.file(
+            'package_config.json',
+            jsonEncode({
+              'configVersion': 2,
+              'packages': [
+                {'name': 'test_app', 'rootUri': '../', 'packageUri': 'lib/'},
+              ],
+            }),
+          ),
+        ]),
+        d.dir('.cursor', [d.dir('skills')]),
+        d.dir('.config', [
+          d.dir('dart_skills', [
+            d.file(
+              'skills_config.json',
+              jsonEncode({
+                'version': SkillManifest.currentVersion,
+                'registries': [
+                  {'cloneUrl': registryUri, 'isSkillRegistry': true}
+                ]
+              }),
+            ),
+          ]),
+        ]),
+      ]);
+      await project.create();
+      final projectPath = project.io.path;
+
+      final getCommand = GetCommand(
+        dialogSupport: FakeDialogSupport()
+          ..multiSelectResult = {0}
+          ..singleSelectResult = 0,
+      );
+
+      final runner = SkillsCommandRunner('skills', 'Test')
+        ..addCommand(getCommand);
+
+      await runner.run([
+        '--directory',
+        projectPath,
+        'get',
+        '--ide',
+        'cursor',
+        '--git',
+        registryUri,
+      ]);
+
+      await d.dir(projectPath, [d.dir('.cursor/skills/pkg-skill')]).validate();
+
+      final manifestFile = File(SkillManifest.pathIn(projectPath));
+      final manifest = await SkillManifest.load(manifestFile);
+      expect(manifest, isNotNull);
+      final repo =
+          manifest!.registries.firstWhere((r) => r.cloneUrl == registryUri);
+      expect(repo.isSkillRegistry, isFalse);
+    });
+
+    test(
+        'when repo is already a registry and user declines conversion, then '
+        'skips it and does not install', () async {
+      final mockRegistry = d.dir('mock_registry', [
+        d.dir('skills', [
+          d.dir('pkg-skill', [
+            d.file('SKILL.md', '---\nname: pkg-skill\n---\n'),
+          ]),
+        ]),
+      ]);
+      await mockRegistry.create();
+      final registryPath = mockRegistry.io.path;
+
+      // Initialize git repo
+      await Process.run('git', ['init'], workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.name', 'Test'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.email', 'test@example.com'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['add', '.'], workingDirectory: registryPath);
+      await Process.run('git', ['commit', '-m', 'initial'],
+          workingDirectory: registryPath);
+
+      final registryUri = Uri.file(registryPath).toString();
+
+      final project = d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_app
+environment:
+  sdk: ^3.0.0
+'''),
+        d.dir('.dart_tool', [
+          d.file(
+            'package_config.json',
+            jsonEncode({
+              'configVersion': 2,
+              'packages': [
+                {'name': 'test_app', 'rootUri': '../', 'packageUri': 'lib/'},
+              ],
+            }),
+          ),
+        ]),
+        d.dir('.cursor', [d.dir('skills')]),
+        d.dir('.config', [
+          d.dir('dart_skills', [
+            d.file(
+              'skills_config.json',
+              jsonEncode({
+                'version': SkillManifest.currentVersion,
+                'registries': [
+                  {'cloneUrl': registryUri, 'isSkillRegistry': true}
+                ]
+              }),
+            ),
+          ]),
+        ]),
+      ]);
+      await project.create();
+      final projectPath = project.io.path;
+
+      final getCommand = GetCommand(
+        dialogSupport: FakeDialogSupport()
+          ..multiSelectResult = {0}
+          ..singleSelectResult = 1,
+      );
+
+      final runner = SkillsCommandRunner('skills', 'Test')
+        ..addCommand(getCommand);
+
+      await runner.run([
+        '--directory',
+        projectPath,
+        'get',
+        '--ide',
+        'cursor',
+        '--git',
+        registryUri,
+      ]);
+
+      await d.dir(projectPath, [
+        d.nothing('.cursor/skills/pkg-skill'),
+      ]).validate();
+
+      final manifestFile = File(SkillManifest.pathIn(projectPath));
+      final manifest = await SkillManifest.load(manifestFile);
+      expect(manifest, isNotNull);
+      final repo =
+          manifest!.registries.firstWhere((r) => r.cloneUrl == registryUri);
+      expect(repo.isSkillRegistry, isTrue);
+    });
+
+    test('when repo is already a registry and no dialog support, then skips',
+        () async {
+      final mockRegistry = d.dir('mock_registry', [
+        d.dir('skills', [
+          d.dir('pkg-skill', [
+            d.file('SKILL.md', '---\nname: pkg-skill\n---\n'),
+          ]),
+        ]),
+      ]);
+      await mockRegistry.create();
+      final registryPath = mockRegistry.io.path;
+
+      // Initialize git repo
+      await Process.run('git', ['init'], workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.name', 'Test'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['config', 'user.email', 'test@example.com'],
+          workingDirectory: registryPath);
+      await Process.run('git', ['add', '.'], workingDirectory: registryPath);
+      await Process.run('git', ['commit', '-m', 'initial'],
+          workingDirectory: registryPath);
+
+      final registryUri = Uri.file(registryPath).toString();
+
+      final project = d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_app
+environment:
+  sdk: ^3.0.0
+'''),
+        d.dir('.dart_tool', [
+          d.file(
+            'package_config.json',
+            jsonEncode({
+              'configVersion': 2,
+              'packages': [
+                {'name': 'test_app', 'rootUri': '../', 'packageUri': 'lib/'},
+              ],
+            }),
+          ),
+        ]),
+        d.dir('.cursor', [d.dir('skills')]),
+        d.dir('.config', [
+          d.dir('dart_skills', [
+            d.file(
+              'skills_config.json',
+              jsonEncode({
+                'version': SkillManifest.currentVersion,
+                'registries': [
+                  {'cloneUrl': registryUri, 'isSkillRegistry': true}
+                ]
+              }),
+            ),
+          ]),
+        ]),
+      ]);
+      await project.create();
+      final projectPath = project.io.path;
+
+      final getCommand = GetCommand(
+        dialogSupport: null,
+      );
+
+      final runner = SkillsCommandRunner('skills', 'Test')
+        ..addCommand(getCommand);
+
+      await runner.run([
+        '--directory',
+        projectPath,
+        'get',
+        '--ide',
+        'cursor',
+        '--git',
+        registryUri,
+      ]);
+
+      await d.dir(projectPath, [
+        d.nothing('.cursor/skills/pkg-skill'),
+      ]).validate();
+
+      final manifestFile = File(SkillManifest.pathIn(projectPath));
+      final manifest = await SkillManifest.load(manifestFile);
+      expect(manifest, isNotNull);
+      final repo =
+          manifest!.registries.firstWhere((r) => r.cloneUrl == registryUri);
+      expect(repo.isSkillRegistry, isTrue);
+    });
+
+    test(
+        'when one repo is already a registry and user declines conversion, '
+        'it skips it but still installs from other git repos', () async {
+      final mockRegistry1 = d.dir('mock_registry1', [
+        d.dir('skills', [
+          d.dir('pkg1-skill', [
+            d.file('SKILL.md', '---\nname: pkg1-skill\n---\n'),
+          ]),
+        ]),
+      ]);
+      await mockRegistry1.create();
+      final registryPath1 = mockRegistry1.io.path;
+      await _initGitRepo(registryPath1);
+      final registryUri1 = Uri.file(registryPath1).toString();
+
+      final mockRegistry2 = d.dir('mock_registry2', [
+        d.dir('skills', [
+          d.dir('pkg2-skill', [
+            d.file('SKILL.md', '---\nname: pkg2-skill\n---\n'),
+          ]),
+        ]),
+      ]);
+      await mockRegistry2.create();
+      final registryPath2 = mockRegistry2.io.path;
+      await _initGitRepo(registryPath2);
+      final registryUri2 = Uri.file(registryPath2).toString();
+
+      final project = d.dir('project', [
+        d.file('pubspec.yaml', '''
+name: test_app
+environment:
+  sdk: ^3.0.0
+'''),
+        d.dir('.dart_tool', [
+          d.file(
+            'package_config.json',
+            jsonEncode({
+              'configVersion': 2,
+              'packages': [
+                {'name': 'test_app', 'rootUri': '../', 'packageUri': 'lib/'},
+              ],
+            }),
+          ),
+        ]),
+        d.dir('.cursor', [d.dir('skills')]),
+        d.dir('.config', [
+          d.dir('dart_skills', [
+            d.file(
+              'skills_config.json',
+              jsonEncode({
+                'version': SkillManifest.currentVersion,
+                'registries': [
+                  {'cloneUrl': registryUri1, 'isSkillRegistry': true}
+                ]
+              }),
+            ),
+          ]),
+        ]),
+      ]);
+      await project.create();
+      final projectPath = project.io.path;
+
+      final getCommand = GetCommand(
+        dialogSupport: FakeDialogSupport()
+          ..multiSelectResult = {0}
+          ..singleSelectResult = 1,
+      );
+
+      final runner = SkillsCommandRunner('skills', 'Test')
+        ..addCommand(getCommand);
+
+      await runner.run([
+        '--directory',
+        projectPath,
+        'get',
+        '--ide',
+        'cursor',
+        '--git',
+        registryUri1,
+        '--git',
+        registryUri2,
+      ]);
+
+      await d.dir(projectPath, [
+        d.nothing('.cursor/skills/pkg1-skill'),
+        d.dir('.cursor/skills/pkg2-skill'),
+      ]).validate();
+
+      final manifestFile = File(SkillManifest.pathIn(projectPath));
+      final manifest = await SkillManifest.load(manifestFile);
+      expect(manifest, isNotNull);
+      final repo1 =
+          manifest!.registries.firstWhere((r) => r.cloneUrl == registryUri1);
+      expect(repo1.isSkillRegistry, isTrue);
+      final repo2 =
+          manifest.registries.firstWhere((r) => r.cloneUrl == registryUri2);
+      expect(repo2.isSkillRegistry, isFalse);
+    });
   });
 }
 
 Future<bool> _gitUnavailable() async => false;
+
+Future<void> _initGitRepo(String path) async {
+  await Process.run('git', ['init'], workingDirectory: path);
+  await Process.run('git', ['config', 'user.name', 'Test'],
+      workingDirectory: path);
+  await Process.run('git', ['config', 'user.email', 'test@example.com'],
+      workingDirectory: path);
+  await Process.run('git', ['add', '.'], workingDirectory: path);
+  await Process.run('git', ['commit', '-m', 'initial'], workingDirectory: path);
+}

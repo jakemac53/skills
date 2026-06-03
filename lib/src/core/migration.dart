@@ -54,7 +54,7 @@ Future<SkillManifest> maybeDoRegistryMigration(String rootPath,
     return manifest;
   }
 
-  final existingRepos = <RegistryRepo>[];
+  final existingRepos = <GitRepo>[];
   try {
     await for (final entity in reposDir.list()) {
       if (entity is Directory) {
@@ -63,7 +63,7 @@ Future<SkillManifest> maybeDoRegistryMigration(String rootPath,
           if (subEntity is Directory) {
             final name = p.basename(subEntity.path);
 
-            existingRepos.add(RegistryRepo(
+            existingRepos.add(GitRepo(
               cloneUrl: 'https://github.com/$owner/$name.git',
             ));
           }
@@ -74,7 +74,7 @@ Future<SkillManifest> maybeDoRegistryMigration(String rootPath,
     // Ignore errors listing directories.
   }
 
-  final reposToMigrate = <RegistryRepo>[];
+  final reposToMigrate = <GitRepo>[];
   for (final repo in existingRepos) {
     if (globalConfig.registries.any((r) => r.cloneUrl == repo.cloneUrl)) {
       _logger.info(

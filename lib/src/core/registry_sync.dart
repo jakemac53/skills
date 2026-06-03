@@ -12,7 +12,7 @@ class RegistrySync {
   final GitRunner gitRunner;
 
   /// Repos to sync.
-  final List<RegistryRepo> repos;
+  final List<GitRepo> repos;
 
   const RegistrySync({GitRunner? gitRunner, this.repos = const []})
       : gitRunner = gitRunner ?? const GitRunner();
@@ -33,7 +33,7 @@ class RegistrySync {
     }
 
     for (final repo in repos) {
-      final repoPath = registryRepoPath(rootPath, repo);
+      final repoPath = gitRepoPath(rootPath, repo);
       final dir = Directory(repoPath);
 
       if (await dir.exists()) {
@@ -47,7 +47,7 @@ class RegistrySync {
   Future<void> _clone(
     String rootPath,
     String repoPath,
-    RegistryRepo repo,
+    GitRepo repo,
     void Function(String)? onProgress,
   ) async {
     onProgress?.call('Cloning ${repo.cloneUrl}...');
@@ -66,7 +66,7 @@ class RegistrySync {
 
   Future<void> _update(
     String repoPath,
-    RegistryRepo repo,
+    GitRepo repo,
     void Function(String)? onProgress,
   ) async {
     onProgress?.call('Updating ${repo.cloneUrl}...');

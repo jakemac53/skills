@@ -141,13 +141,13 @@ void main() {
       group('Given global and local registries configured', () {
         test('when listing registries then both are printed', () async {
           var globalConfig = const GlobalConfig();
-          globalConfig = globalConfig.withRegistry(const RegistryRepo(
-              cloneUrl: 'https://github.com/g_owner/g_repo.git'));
+          globalConfig = globalConfig.withRegistry(
+              const GitRepo(cloneUrl: 'https://github.com/g_owner/g_repo.git'));
           await globalConfig.save(File(globalConfigPath));
 
           var manifest = const SkillManifest();
-          manifest = manifest.withRegistry(const RegistryRepo(
-              cloneUrl: 'https://github.com/l_owner/l_repo.git'));
+          manifest = manifest.withRegistry(
+              const GitRepo(cloneUrl: 'https://github.com/l_owner/l_repo.git'));
           await manifest.save(File(SkillManifest.pathIn(projectPath)));
 
           final logs = <String>[];
@@ -172,7 +172,7 @@ void main() {
         test('when removing it then it is removed without prompting', () async {
           var manifest = const SkillManifest();
           const repo =
-              RegistryRepo(cloneUrl: 'https://github.com/l_owner/l_repo.git');
+              GitRepo(cloneUrl: 'https://github.com/l_owner/l_repo.git');
           manifest = manifest.withRegistry(repo);
           await manifest.save(File(SkillManifest.pathIn(projectPath)));
 
@@ -194,7 +194,7 @@ void main() {
         test('when removing it then it is removed without prompting', () async {
           var globalConfig = const GlobalConfig();
           const repo =
-              RegistryRepo(cloneUrl: 'https://github.com/g_owner/g_repo.git');
+              GitRepo(cloneUrl: 'https://github.com/g_owner/g_repo.git');
           globalConfig = globalConfig.withRegistry(repo);
           await globalConfig.save(File(globalConfigPath));
 
@@ -215,8 +215,8 @@ void main() {
       group('Given a registry in both configs', () {
         test('when removing it then prompts and removes from selected location',
             () async {
-          const repo = RegistryRepo(
-              cloneUrl: 'https://github.com/both_owner/both_repo.git');
+          const repo =
+              GitRepo(cloneUrl: 'https://github.com/both_owner/both_repo.git');
 
           var globalConfig = const GlobalConfig();
           globalConfig = globalConfig.withRegistry(repo);
@@ -250,9 +250,9 @@ void main() {
         test('when running remove then shows multi-select and removes selected',
             () async {
           const repo1 =
-              RegistryRepo(cloneUrl: 'https://github.com/owner1/repo1.git');
+              GitRepo(cloneUrl: 'https://github.com/owner1/repo1.git');
           const repo2 =
-              RegistryRepo(cloneUrl: 'https://github.com/owner2/repo2.git');
+              GitRepo(cloneUrl: 'https://github.com/owner2/repo2.git');
 
           var globalConfig = const GlobalConfig();
           globalConfig = globalConfig.withRegistry(repo1);
@@ -280,7 +280,7 @@ void main() {
         test('when removing it then deletes the back-linked skills from disk',
             () async {
           final skillPath = p.join(projectPath, '.cursor', 'skills', 'skill_a');
-          final repo = RegistryRepo(
+          final repo = GitRepo(
             cloneUrl: 'https://github.com/g_owner/g_repo.git',
             installs: [skillPath],
           );

@@ -22,12 +22,18 @@ class GetCommand extends SkillsCommand {
   })  : _dialogSupport = dialogSupport,
         _gitRunner = gitRunner {
     addIdeOption(argParser);
+    argParser.addMultiOption(
+      'git',
+      help:
+          'Git repository URL or GitHub org/repo shorthand to get skills from.',
+    );
   }
 
   GitRunner get _effectiveGitRunner => _gitRunner ?? const GitRunner();
 
   @override
   Future<void> run() async {
+    final argResults = this.argResults!;
     final workspace = await resolveWorkspace();
     final rootPath = workspace.rootPath;
 
@@ -40,6 +46,8 @@ class GetCommand extends SkillsCommand {
     final ides =
         await resolveIdes(argResults: argResults, projectPath: rootPath);
 
+    final gitRepos = argResults.multiOption('git');
+
     await getSkills(
       ides: ides,
       logger: logger,
@@ -48,6 +56,7 @@ class GetCommand extends SkillsCommand {
       gitRunner: _effectiveGitRunner,
       usage: usage,
       packageNames: packageNamesArg?.toSet(),
+      gitRepos: gitRepos,
     );
   }
 }

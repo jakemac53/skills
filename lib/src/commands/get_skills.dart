@@ -1,6 +1,7 @@
 import 'dart:io' as io;
 
 import 'package:args/command_runner.dart';
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:skills/src/commands/skills_command.dart';
 import 'package:skills/src/core/advisory_checker.dart';
@@ -31,6 +32,7 @@ Future<bool> getSkills({
   GitRunner gitRunner = const GitRunner(),
   String usage = '',
   Set<String>? packageNames,
+  List<String> gitRepos = const [],
 }) async {
   final ready = await PubRunner.ensureWorkspaceConfigs(workspace);
   if (!ready) {
@@ -61,6 +63,52 @@ Future<bool> getSkills({
   final rootPath = workspace.rootPath;
   var manifest = await SkillManifest.loadOrEmptyFromRoot(rootPath);
 
+  for (final repoArg in gitRepos) {
+    try {
+      final repo = GitRepo.parse(repoArg).copyWith(isSkillRegistry: false);
+      final existing = manifest.registries
+          .firstWhereOrNull((r) => r.cloneUrl == repo.cloneUrl);
+      if (existing != null) {
+        if (existing.isSkillRegistry) {
+          if (dialogSupport != null) {
+            final options = [
+              'Yes, convert to direct skill source (installs all skills)',
+              'No, keep as skill registry (only installs skills matching '
+                  'dependencies)',
+            ];
+            final index = await dialogSupport.showSingleSelectDialog(
+              options,
+              title: 'Repository ${repo.cloneUrl} is currently configured as a '
+                  'skill registry.\n'
+                  'Do you want to change it to a direct skill source?',
+            );
+            if (index == 0) {
+              manifest = manifest.withoutRegistry(existing).withRegistry(repo);
+              logger.info(
+                  'Updated registry ${repo.cloneUrl} to be a direct skill '
+                  'repo.');
+            } else {
+              logger.severe(
+                  'Aborted: Repository ${repo.cloneUrl} remains a skill registry.');
+              continue;
+            }
+          } else {
+            logger.severe(
+                'Repository ${repo.cloneUrl} is already configured as a skill registry. '
+                'Cannot change to a direct skill source in non-interactive mode.');
+            continue;
+          }
+        }
+      } else {
+        manifest = manifest.withRegistry(repo);
+        logger.info(
+            'Added registry ${repo.cloneUrl} to local manifest (bypass package filtering).');
+      }
+    } on FormatException catch (e) {
+      throw UsageException(e.message, usage);
+    }
+  }
+
   final globalConfigPath = GlobalConfig.globalPath;
   final globalConfigFile = io.File(globalConfigPath);
   var globalConfig = await GlobalConfig.loadOrEmpty(globalConfigFile);
@@ -87,7 +135,7 @@ Future<bool> getSkills({
       ));
 
     for (final repo in registrySync.repos) {
-      final repoPath = registryRepoPath(rootPath, repo);
+      final repoPath = gitRepoPath(rootPath, repo);
       final commit = await _getGitCommit(repoPath);
       if (commit != null) {
         registryRepoCommits[repo.cloneUrl] = commit;
@@ -122,11 +170,34 @@ Future<bool> getSkills({
   final dartSkills = await scanner.scan(packages);
 
   final resolvedPackageNames = packages.map((p) => p.name).toSet();
+
+  final filteredRegistrySkills = <ScannedSkill>[];
+  final unfilteredRegistrySkills = <ScannedSkill>[];
+
+  final repoMap = {
+    for (final r in [...globalConfig.registries, ...manifest.registries])
+      r.cloneUrl: r
+  };
+
+  for (final skill in registrySkills) {
+    final repo = repoMap[skill.registryUrl];
+    if (repo != null && !repo.isSkillRegistry) {
+      unfilteredRegistrySkills.add(skill);
+    } else {
+      filteredRegistrySkills.add(skill);
+    }
+  }
+
   var skills = mergeSkills(
     dartSkills: dartSkills,
-    registrySkills: registrySkills,
+    registrySkills: filteredRegistrySkills,
     resolvedPackageNames: resolvedPackageNames,
   );
+
+  final packagesWithDartSkills = dartSkills.map((s) => s.packageName).toSet();
+  final uniqueUnfiltered = unfilteredRegistrySkills
+      .where((s) => !packagesWithDartSkills.contains(s.packageName));
+  skills.addAll(uniqueUnfiltered);
 
   if (skills.isEmpty) {
     logger.info('No skills found in ${packageNames ?? "any"} packages.');

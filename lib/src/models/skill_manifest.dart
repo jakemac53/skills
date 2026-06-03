@@ -40,7 +40,7 @@ class SkillManifest {
   final Map<String, Map<String, PackageSkillsEntry>> installations;
 
   /// Configured registries for this workspace.
-  final List<RegistryRepo> registries;
+  final List<GitRepo> registries;
 
   const SkillManifest({
     this.version = currentVersion,
@@ -120,7 +120,7 @@ class SkillManifest {
 
     final registriesJson = json['registries'] as List<dynamic>? ?? [];
     final registries = registriesJson
-        .map((r) => RegistryRepo.fromJson(r as Map<String, dynamic>))
+        .map((r) => GitRepo.fromJson(r as Map<String, dynamic>))
         .toList();
 
     return SkillManifest(
@@ -204,7 +204,7 @@ class SkillManifest {
   }
 
   /// Returns a copy with [repo] added.
-  SkillManifest withRegistry(RegistryRepo repo) {
+  SkillManifest withRegistry(GitRepo repo) {
     return SkillManifest(
       installations: installations,
       registries: [...registries, repo],
@@ -212,7 +212,7 @@ class SkillManifest {
   }
 
   /// Returns a copy with [repo] removed.
-  SkillManifest withoutRegistry(RegistryRepo repo) {
+  SkillManifest withoutRegistry(GitRepo repo) {
     return SkillManifest(
       installations: installations,
       registries: registries.where((r) => r.cloneUrl != repo.cloneUrl).toList(),

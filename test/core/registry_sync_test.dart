@@ -75,7 +75,7 @@ void main() {
         // Use customCloneUrl to point at local repo so we don't hit network
         final syncWithLocal = RegistrySync(
           repos: [
-            RegistryRepo(
+            GitRepo(
               cloneUrl: fileUrl,
             ),
           ],
@@ -85,9 +85,9 @@ void main() {
         final reposDir = Directory(registryReposPath(projectPath));
         expect(await reposDir.exists(), isTrue);
         final repoDir = Directory(
-          registryRepoPath(
+          gitRepoPath(
             projectPath,
-            RegistryRepo(
+            GitRepo(
               cloneUrl: fileUrl,
             ),
           ),
