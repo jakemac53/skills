@@ -84,18 +84,21 @@ class GitRepo {
   ///
   /// Supports `owner/repo` shorthand for GitHub, or full Git URIs.
   /// Throws [FormatException] if the format is invalid.
-  static GitRepo parse(String arg) {
+  static GitRepo fromArgument(String arg, {bool isSkillRegistry = true}) {
     if (arg.contains('/') && !arg.contains(':') && !arg.contains('@')) {
       final parts = arg.split('/');
       if (parts.length != 2) {
         throw FormatException(
-          'Invalid repo format: $arg. Expected <owner>/<repo> or a Git URI.',
+          'Invalid git repo format: $arg. Expected <owner>/<repo> or a URI.',
         );
       }
       final url = 'https://github.com/${parts[0]}/${parts[1]}.git';
-      return GitRepo(cloneUrl: url);
+      return GitRepo(cloneUrl: url, isSkillRegistry: isSkillRegistry);
     } else {
-      return GitRepo(cloneUrl: arg);
+      // This just validates it as a URL or thows a FormatException for an
+      // early error.
+      Uri.parse(arg);
+      return GitRepo(cloneUrl: arg, isSkillRegistry: isSkillRegistry);
     }
   }
 

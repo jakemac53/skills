@@ -65,7 +65,7 @@ Future<bool> getSkills({
 
   for (final repoArg in gitRepos) {
     try {
-      final repo = GitRepo.parse(repoArg).copyWith(isSkillRegistry: false);
+      final repo = GitRepo.fromArgument(repoArg, isSkillRegistry: false);
       final existing = manifest.registries
           .firstWhereOrNull((r) => r.cloneUrl == repo.cloneUrl);
       if (existing != null) {

@@ -104,7 +104,7 @@ class RegistryAddCommand extends SkillsCommand {
     final repos = <GitRepo>[];
     for (final arg in rest) {
       try {
-        repos.add(GitRepo.parse(arg));
+        repos.add(GitRepo.fromArgument(arg));
       } on FormatException catch (e) {
         throw UsageException(e.message, usage);
       }
@@ -245,7 +245,7 @@ class RegistryRemoveCommand extends SkillsCommand {
     final repos = <GitRepo>[];
     for (final arg in rest) {
       try {
-        repos.add(GitRepo.parse(arg));
+        repos.add(GitRepo.fromArgument(arg));
       } on FormatException catch (e) {
         throw UsageException(e.message, usage);
       }

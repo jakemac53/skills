@@ -29,24 +29,35 @@ void main() {
     });
   });
 
-  group('GitRepo.parse', () {
+  group('GitRepo.fromArgument', () {
     test('parses github shorthand', () {
-      final repo = GitRepo.parse('flutter/skills');
+      final repo = GitRepo.fromArgument('flutter/skills');
       expect(repo.cloneUrl, equals('https://github.com/flutter/skills.git'));
     });
 
     test('parses full HTTPS Git URI', () {
-      final repo = GitRepo.parse('https://example.com/repo.git');
+      final repo = GitRepo.fromArgument('https://example.com/repo.git');
       expect(repo.cloneUrl, equals('https://example.com/repo.git'));
     });
 
     test('parses SSH Git URI', () {
-      final repo = GitRepo.parse('git@github.com:flutter/skills.git');
+      final repo = GitRepo.fromArgument('git@github.com:flutter/skills.git');
       expect(repo.cloneUrl, equals('git@github.com:flutter/skills.git'));
     });
 
     test('throws FormatException for invalid shorthand', () {
-      expect(() => GitRepo.parse('a/b/c'), throwsFormatException);
+      expect(() => GitRepo.fromArgument('a/b/c'), throwsFormatException);
+    });
+
+    test('throws FormatException for invalid URI', () {
+      expect(
+          () => GitRepo.fromArgument('http://foo:bar'), throwsFormatException);
+    });
+
+    test('supports isSkillRegistry parameter', () {
+      final repo =
+          GitRepo.fromArgument('flutter/skills', isSkillRegistry: false);
+      expect(repo.isSkillRegistry, isFalse);
     });
   });
 
