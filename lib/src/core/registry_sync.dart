@@ -14,7 +14,7 @@ class RegistrySync {
   /// Repos to sync.
   final List<RegistryRepo> repos;
 
-  const RegistrySync({GitRunner? gitRunner, this.repos = const []})
+  const new({GitRunner? gitRunner, this.repos = const []})
       : gitRunner = gitRunner ?? const GitRunner();
 
   /// Ensures all [repos] are present and up to date under

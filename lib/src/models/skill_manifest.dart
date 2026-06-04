@@ -42,7 +42,7 @@ class SkillManifest {
   /// Configured registries for this workspace.
   final List<RegistryRepo> registries;
 
-  const SkillManifest({
+  const new({
     this.version = currentVersion,
     this.installations = const {},
     this.registries = const [],
@@ -103,7 +103,7 @@ class SkillManifest {
     return loaded ?? const SkillManifest();
   }
 
-  factory SkillManifest.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final version = json['version'] as int? ?? 1;
     final installationsJson =
         json['installations'] as Map<String, dynamic>? ?? {};
@@ -233,9 +233,9 @@ class SkillManifest {
 class PackageSkillsEntry {
   final List<InstalledSkillEntry> skills;
 
-  const PackageSkillsEntry({this.skills = const []});
+  const new({this.skills = const []});
 
-  factory PackageSkillsEntry.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final skillsList = json['skills'] as List<dynamic>? ?? [];
     return PackageSkillsEntry(
       skills: skillsList
@@ -254,9 +254,9 @@ class InstalledSkillEntry {
   final String name;
   final DateTime installedAt;
 
-  const InstalledSkillEntry({required this.name, required this.installedAt});
+  const new({required this.name, required this.installedAt});
 
-  factory InstalledSkillEntry.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     return InstalledSkillEntry(
       name: json['name'] as String,
       installedAt: DateTime.parse(json['installedAt'] as String),

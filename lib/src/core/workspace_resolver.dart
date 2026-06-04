@@ -14,7 +14,7 @@ class WorkspaceLayout {
   /// The packages whose dependencies should be scanned for skills.
   final List<WorkspacePackage> packages;
 
-  const WorkspaceLayout({required this.rootPath, required this.packages});
+  const new({required this.rootPath, required this.packages});
 
   bool get isWorkspace => packages.length > 1;
 }
@@ -27,7 +27,7 @@ class WorkspacePackage {
   /// Path to the `.dart_tool/package_config.json` that covers this package.
   final String packageConfigPath;
 
-  const WorkspacePackage({
+  const new({
     required this.name,
     required this.path,
     required this.packageConfigPath,
@@ -42,7 +42,7 @@ class WorkspacePackage {
 /// 3. Single-package project
 /// 4. Implicit workspace (no root pubspec.yaml, but subdirectories have them)
 class WorkspaceResolver {
-  const WorkspaceResolver();
+  const new();
 
   /// Resolves the workspace layout for [projectPath].
   ///

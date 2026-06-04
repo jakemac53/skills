@@ -8,7 +8,7 @@ class GitRunner {
   /// If set, used instead of actually running git (for tests).
   final Future<bool> Function()? isAvailableOverride;
 
-  const GitRunner({this.isAvailableOverride});
+  const new({this.isAvailableOverride});
 
   /// Returns true if `git` can be executed (e.g. `git --version` succeeds).
   Future<bool> get isAvailable async {

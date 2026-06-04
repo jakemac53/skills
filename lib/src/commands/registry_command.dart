@@ -17,7 +17,7 @@ class RegistryCommand extends Command<void> {
   @override
   final String description = 'Manage skill registries.';
 
-  RegistryCommand({DialogSupport? dialogSupport}) {
+  new({DialogSupport? dialogSupport}) {
     addSubcommand(RegistryListCommand());
     addSubcommand(RegistryAddCommand(dialogSupport: dialogSupport));
     addSubcommand(RegistryRemoveCommand(dialogSupport: dialogSupport));
@@ -71,7 +71,7 @@ class RegistryAddCommand extends SkillsCommand {
 
   final DialogSupport? dialogSupport;
 
-  RegistryAddCommand({this.dialogSupport}) {
+  new({this.dialogSupport}) {
     argParser.addFlag('global',
         help: 'Add to global config.', defaultsTo: null);
   }
@@ -148,7 +148,7 @@ class RegistryRemoveCommand extends SkillsCommand {
 
   final DialogSupport? dialogSupport;
 
-  RegistryRemoveCommand({this.dialogSupport}) {
+  new({this.dialogSupport}) {
     argParser.addFlag('global',
         help: 'Remove from global config.', defaultsTo: null);
   }

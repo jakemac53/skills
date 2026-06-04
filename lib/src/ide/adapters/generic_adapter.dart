@@ -15,7 +15,7 @@ class GenericAdapter extends AgentSkillsAdapter {
   final String _projectPath;
   final DialogSupport? _dialogSupport;
 
-  GenericAdapter(this._projectPath, this._dialogSupport)
+  new(this._projectPath, this._dialogSupport)
       : super(Ide.generic.skillsPath(_projectPath));
 
   @override

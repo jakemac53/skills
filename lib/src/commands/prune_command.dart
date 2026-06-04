@@ -20,9 +20,9 @@ class PruneCommand extends SkillsCommand {
 
   final DialogSupport? _dialogSupport;
 
-  PruneCommand({
-    DialogSupport? dialogSupport,
-  }) : _dialogSupport = dialogSupport {
+  new({
+    this._dialogSupport,
+  }) {
     addIdeOption(argParser);
   }
 

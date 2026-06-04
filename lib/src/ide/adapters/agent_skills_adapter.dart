@@ -14,7 +14,7 @@ class AgentSkillsAdapter implements IdeAdapter {
   @override
   final String skillsDirectory;
 
-  AgentSkillsAdapter(this.skillsDirectory);
+  new(this.skillsDirectory);
 
   @override
   Future<void> ensureSkillsDirectory() async {

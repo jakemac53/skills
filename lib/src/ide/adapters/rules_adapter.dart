@@ -25,7 +25,7 @@ class RulesAdapter implements IdeAdapter {
   /// Optional prefix added before the markdown body.
   final String Function(SkillMetadata metadata)? headerBuilder;
 
-  RulesAdapter({
+  new({
     required this.skillsDirectory,
     this.fileExtension = '.md',
     this.headerBuilder,

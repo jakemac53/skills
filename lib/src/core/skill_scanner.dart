@@ -13,7 +13,7 @@ class ScannedSkill {
   final String? registryUrl;
   final bool isGlobal;
 
-  const ScannedSkill({
+  const new({
     required this.packageName,
     required this.skillName,
     required this.skillPath,
@@ -26,7 +26,7 @@ class ScannedSkill {
 class SkillScanner {
   final Logger logger;
 
-  SkillScanner(this.logger);
+  new(this.logger);
 
   /// Scans all [packages] for skills directories and returns found skills.
   Future<List<ScannedSkill>> scan(List<ResolvedPackage> packages) async {

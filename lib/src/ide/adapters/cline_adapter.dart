@@ -6,5 +6,5 @@ import 'agent_skills_adapter.dart';
 /// Installs skills to `.cline/skills/<skill-name>/` per
 /// [Cline skills](https://docs.cline.bot/customization/skills).
 class ClineAdapter extends AgentSkillsAdapter {
-  ClineAdapter(String projectPath) : super(Ide.cline.skillsPath(projectPath));
+  new(String projectPath) : super(Ide.cline.skillsPath(projectPath));
 }

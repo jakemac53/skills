@@ -15,7 +15,7 @@ import 'workspace_resolver.dart';
 class PubRunner {
   final String projectPath;
 
-  const PubRunner(this.projectPath);
+  const new(this.projectPath);
 
   /// Detects whether the project uses Flutter (has flutter SDK dependency).
   bool get isFlutterProject {

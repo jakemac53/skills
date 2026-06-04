@@ -15,9 +15,9 @@ class RemoveCommand extends SkillsCommand {
 
   final DialogSupport? _dialogSupport;
 
-  RemoveCommand({
-    DialogSupport? dialogSupport,
-  }) : _dialogSupport = dialogSupport {
+  new({
+    this._dialogSupport,
+  }) {
     addIdeOption(argParser);
     argParser.addMultiOption(
       'package',

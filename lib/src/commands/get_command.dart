@@ -16,11 +16,10 @@ class GetCommand extends SkillsCommand {
   final DialogSupport? _dialogSupport;
   final GitRunner? _gitRunner;
 
-  GetCommand({
-    DialogSupport? dialogSupport,
-    GitRunner? gitRunner,
-  })  : _dialogSupport = dialogSupport,
-        _gitRunner = gitRunner {
+  new({
+    this._dialogSupport,
+    this._gitRunner,
+  }) {
     addIdeOption(argParser);
     argParser.addMultiOption(
       'package',

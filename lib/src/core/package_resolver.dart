@@ -9,7 +9,7 @@ class ResolvedPackage {
   final String name;
   final String rootPath;
 
-  const ResolvedPackage({required this.name, required this.rootPath});
+  const new({required this.name, required this.rootPath});
 }
 
 /// Resolves Dart package dependency locations from package_config.json.
@@ -22,7 +22,7 @@ class ResolvedPackage {
 class PackageResolver {
   final String projectPath;
 
-  const PackageResolver(this.projectPath);
+  const new(this.projectPath);
 
   /// Resolves all dependency packages to their on-disk locations.
   ///

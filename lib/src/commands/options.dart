@@ -26,7 +26,7 @@ enum SkillsOption<V> implements OptionDefinition<V> {
     StringOption(argName: 'ide', envName: 'SKILLS_IDE', helpText: 'Target IDE'),
   );
 
-  const SkillsOption(this.option);
+  new(this.option);
 
   @override
   final ConfigOptionBase<V> option;

@@ -12,7 +12,7 @@ import 'package_resolver.dart';
 class AdvisoryChecker {
   final http.Client? _httpClient;
 
-  AdvisoryChecker({http.Client? httpClient}) : _httpClient = httpClient;
+  new({this._httpClient});
 
   /// Checks for vulnerabilities for the given [packages] and
   /// [registryRepoCommits].

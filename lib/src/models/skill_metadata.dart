@@ -9,7 +9,7 @@ class SkillMetadata {
   final String body;
   final Map<String, dynamic> extraFields;
 
-  const SkillMetadata({
+  const new({
     required this.name,
     required this.description,
     required this.body,

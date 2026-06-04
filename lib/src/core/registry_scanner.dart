@@ -16,7 +16,7 @@ import 'skill_scanner.dart';
 class RegistryScanner {
   static final _logger = Logger('RegistryScanner');
 
-  const RegistryScanner();
+  const new();
 
   /// Scans all [repos] under [rootPath] and returns [ScannedSkill]s.
   ///

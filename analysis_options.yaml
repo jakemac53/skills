@@ -18,6 +18,8 @@ include: package:lints/recommended.yaml
 linter:
   rules:
     - unawaited_futures
+    - unnecessary_type_name_in_constructor
+    - unnecessary_const_in_enum_constructor
 
 # analyzer:
 #   exclude:

@@ -11,7 +11,7 @@ import 'agent_skills_adapter.dart';
 /// Installs skills to `.claude/skills/<skill-name>/` per
 /// [Claude Code skills](https://code.claude.com/docs/en/skills).
 class ClaudeAdapter extends AgentSkillsAdapter {
-  ClaudeAdapter(String projectPath) : super(Ide.claude.skillsPath(projectPath));
+  new(String projectPath) : super(Ide.claude.skillsPath(projectPath));
 
   @override
   Future<String> installSkill(ScannedSkill skill) async {

@@ -2,7 +2,7 @@
 class UserAbortException implements Exception {
   final String message;
 
-  UserAbortException(this.message);
+  new(this.message);
 
   @override
   String toString() => message;

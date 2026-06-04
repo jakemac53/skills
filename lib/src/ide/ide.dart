@@ -20,7 +20,7 @@ enum Ide {
   /// Relative path from project root to the IDE's skills/rules directory.
   final String skillsRelativePath;
 
-  const Ide(this.cliName, this.skillsRelativePath);
+  new(this.cliName, this.skillsRelativePath);
 
   /// Aliases that map to this IDE in the CLI (e.g. antigravity, codex → generic).
   List<String> get cliAliases => switch (this) {
@@ -78,7 +78,7 @@ enum Ide {
 
 /// Detects which IDE is being used based on project directory markers.
 class IdeDetector {
-  const IdeDetector();
+  const new();
 
   /// Auto-detects a single IDE from project directory markers.
   ///

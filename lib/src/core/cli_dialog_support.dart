@@ -17,7 +17,7 @@ class CliUtilDialogSupport implements DialogSupport {
   // ignore: invalid_use_of_visible_for_testing_member
   final SharedStdIn _sharedStdIn;
 
-  CliUtilDialogSupport(this._sharedStdIn);
+  new(this._sharedStdIn);
 
   @override
   Future<int?> showSingleSelectDialog(List<String> options,

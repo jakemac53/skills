@@ -9,7 +9,7 @@ class ListCommand extends SkillsCommand {
   @override
   final String description = 'List installed managed skills.';
 
-  ListCommand();
+  new();
 
   @override
   Future<void> run() async {

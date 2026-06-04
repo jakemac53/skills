@@ -6,6 +6,6 @@ import 'agent_skills_adapter.dart';
 /// Installs skills to `.opencode/skills/<skill-name>/` per
 /// [OpenCode skills](https://opencode.ai/docs/skills/).
 class OpenCodeAdapter extends AgentSkillsAdapter {
-  OpenCodeAdapter(String projectPath)
+  new(String projectPath)
       : super(Ide.opencode.skillsPath(projectPath));
 }

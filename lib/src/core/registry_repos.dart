@@ -20,7 +20,7 @@ class RegistryRepo {
   /// Absolute paths where this repo is installed.
   final List<String> installs;
 
-  const RegistryRepo({
+  const new({
     required this.cloneUrl,
     this.installs = const [],
   });
@@ -35,7 +35,7 @@ class RegistryRepo {
     );
   }
 
-  factory RegistryRepo.fromJson(Map<String, dynamic> json) {
+  factory fromJson(Map<String, dynamic> json) {
     final installs = (json['installs'] as List<dynamic>?)?.cast<String>() ?? [];
     final cloneUrl = json['cloneUrl'] as String;
     return RegistryRepo(cloneUrl: cloneUrl, installs: installs);

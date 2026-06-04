@@ -18,7 +18,7 @@ class SkillInstallResult {
   /// Info for each installed skill (for logging).
   final List<InstalledSkillInfo> installed;
 
-  const SkillInstallResult({
+  const new({
     required this.manifest,
     required this.globalConfig,
     required this.installed,
@@ -33,7 +33,7 @@ class InstalledSkillInfo {
   final String? registryUrl;
   final bool isGlobal;
 
-  const InstalledSkillInfo({
+  const new({
     required this.ideName,
     required this.skillName,
     required this.packageName,
@@ -53,7 +53,7 @@ class SkillRemoveResult {
   /// Info for each removed skill (for logging).
   final List<RemovedSkillInfo> removed;
 
-  const SkillRemoveResult({
+  const new({
     required this.manifest,
     required this.removedCount,
     required this.removed,
@@ -65,14 +65,14 @@ class RemovedSkillInfo {
   final String ideName;
   final String skillName;
 
-  const RemovedSkillInfo({required this.ideName, required this.skillName});
+  const new({required this.ideName, required this.skillName});
 }
 
 /// Service for installing and removing skills across IDEs.
 class SkillInstaller {
   final DialogSupport? _dialogSupport;
 
-  SkillInstaller(this._dialogSupport);
+  new(this._dialogSupport);
 
   /// Installs [skills] for the given [ide] at [rootPath], updating [manifest].
   /// Removes existing skills for each package before reinstalling.
